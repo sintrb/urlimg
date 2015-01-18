@@ -67,47 +67,57 @@ class SwitchImg(SAERequestHandler):
         h = int(self.get_argument("height", 0))
         url = self.get_argument("url", None)
         usecacache = not int(self.get_argument("nocache", 0))
-        urlkey = 'u%s' % (md5(url))
-        key = '%s_w%s_h%s' % (urlkey, w, h)
-        res = usecacache and self.kv.get(key)
-        if res:
-            self.set_header("Cached", "Image")
-        else:
-            bts = usecacache and self.kv.get(urlkey)
-            if bts:
-                self.set_header("Cached", "Url")
-            else:
-                import urllib2
-                bts = urllib2.urlopen(url).read()
-                self.kv.set(urlkey, bts)
-                self.set_header("Cached", "False")
-            import io
-            dats = io.BytesIO(bts)
-            m = img.getimgwithdats(dats)
-            sw = m.size[0]
-            sh = m.size[1]
-            if w == 0:
-                w = sw
-            if h == 0:
-                h = sh
-            if w != sw or h != sh:
-                m = img.fitto(m, w, h)
-            res = img.getimgbytes(m, "png")
-            dats.close()
-            self.kv.set(key, res)
-        self.set_header("Content-Type", "image/png")
-        self.write(res)
         
-
+        if url:
+            urlkey = 'u%s' % (md5(url))
+            key = '%s_w%s_h%s' % (urlkey, w, h)
+            res = usecacache and self.kv.get(key)
+            if res:
+                self.set_header("Cached", "Image")
+            else:
+                bts = usecacache and self.kv.get(urlkey)
+                if bts:
+                    self.set_header("Cached", "Url")
+                else:
+                    import urllib2
+                    bts = urllib2.urlopen(url).read()
+                    self.kv.set(urlkey, bts)
+                    self.set_header("Cached", "False")
+                import io
+                dats = io.BytesIO(bts)
+                m = img.getimgwithdats(dats)
+                sw = m.size[0]
+                sh = m.size[1]
+                if w <= 0:
+                    w = sw
+                if h <= 0:
+                    h = sh
+                if w != sw or h != sh:
+                    m = img.fitto(m, w, h)
+                res = img.getimgbytes(m, "png")
+                dats.close()
+                self.kv.set(key, res)
+            self.set_header("Content-Type", "image/png")
+            self.write(res)
+        else:
+            self.redirect("/demo")
+        
+class DemoHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("demo.html")
 
 url = [
     (r"/", SwitchImg),
     (r"/t/", MainHandler),
     (r"/stc/", StcHandler),
+    (r"/demo", DemoHandler),
 ]
 
+import os
 settings = {
     "debug": True,
+    "static_path" : os.path.join(os.path.dirname(__file__), "static"),
+    "template_path" : os.path.join(os.path.dirname(__file__), "templates"),
 }
 
 

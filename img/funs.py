@@ -26,7 +26,6 @@ def fitto(src, dw=360, dh=200):
         w, h = int(dw), int(sh / kw)
     else:
         w, h = int(sw / kh), int(dh)
-    print w, h
     nsrc = src.resize((w, h),)
     x = (dw - w) / 2
     y = (dh - h) / 2
