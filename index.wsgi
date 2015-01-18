@@ -1,3 +1,6 @@
-def application(environ, start_response):
-    start_response('200 ok', [('content-type', 'text/plain')])
-    return ['Hello, SAE!']
+import tornado.wsgi
+
+import sae
+import webmain
+
+application = sae.create_wsgi_app(tornado.wsgi.WSGIApplication(webmain.url, **webmain.settings))
