@@ -108,8 +108,8 @@ class DemoHandler(tornado.web.RequestHandler):
 
 url = [
     (r"/", SwitchImg),
-    (r"/t/", MainHandler),
-    (r"/stc/", StcHandler),
+    (r"/hi", MainHandler),
+    (r"/stc", StcHandler),
     (r"/demo", DemoHandler),
 ]
 
