@@ -105,6 +105,12 @@ class SwitchImg(SAERequestHandler):
             # self.write(s)
             # return
             key = md5(s)
+            self.set_header("ETag", key)
+            if not usecache and self.check_etag_header():
+                # 304
+                self.set_status(304, 'Not Modified')
+                return
+            
             res = usecache and self.kv.get(key)
             if res:
                 self.set_header("Cached", "Image")
@@ -169,7 +175,7 @@ settings = {
 if __name__ == "__main__":
     import sys
     import tornado.ioloop
-    port = int(sys.argv[1]) if len(sys.argv) >= 2 else 8888
+    port = int(sys.argv[1]) if len(sys.argv) >= 2 else 9999
     application = tornado.web.Application(url, **settings)
     print 'listen at :%d' % port
     application.listen(port)
