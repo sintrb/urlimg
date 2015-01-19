@@ -79,9 +79,10 @@ class SwitchImg(SAERequestHandler):
             'height':(int, 0),
             'url':(str, ''),
             'sign':(str, ''),
+            'signsize':(int, 20),
             'filters':(str, ''),
         }
-
+        
         args = {}
         for k, v in argsmap.items():
             av = unquote(str(self.get_argument(k, '')))
@@ -141,7 +142,7 @@ class SwitchImg(SAERequestHandler):
                         if fk.strip() and fk.strip() in img.filtersmap:
                             m = m.filter(img.filtersmap[fk.strip()][0])
                 if args['sign']:
-                    m = img.watermark(m, args['sign'])
+                    m = img.watermark(m, args['sign'], size=args['signsize'])
 
                 res = img.getimgbytes(m, "png")
                 dats.close()

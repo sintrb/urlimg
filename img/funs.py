@@ -29,17 +29,14 @@ filters = {
 
 filtersmap = dict([(v[0], (v[1], v[2])) for v in filters])
 
-font = None
-def getfont():
-    global font
-    if not font:
-        import os, sys
-        try:
-            file_name = os.path.dirname(sys.modules['img'].__file__)
-            path = os.path.abspath(file_name)
-        except:
-            path = ''
-        font = ImageFont.truetype(os.path.join(path, "font.ttf"), 20)
+def getfont(size):
+    import os, sys
+    try:
+        file_name = os.path.dirname(sys.modules['img'].__file__)
+        path = os.path.abspath(file_name)
+    except:
+        path = ''
+    font = ImageFont.truetype(os.path.join(path, "font.ttf"), size)
     return font
 
 def fitto(src, dw=360, dh=200):
@@ -59,11 +56,11 @@ def fitto(src, dw=360, dh=200):
     dst.paste(nsrc, (x, y, x + w, y + h))
     return dst
 
-def watermark(m, s, color=(0, 0, 0, 255)):
+def watermark(m, s, color=(0, 0, 0, 255), size=20):
     draw = ImageDraw.Draw(m)
-    font = getfont()
+    font = getfont(size)
     fsize = font.getsize(s)
-    draw.text((m.size[0] - fsize[0] - 5, m.size[1] - 20 - 5), s, font=font, fill=color)
+    draw.text((m.size[0] - fsize[0] - fsize[1] / 5, m.size[1] - fsize[1]), s, font=font, fill=color)
     return m
 
 def getimg(path):

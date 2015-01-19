@@ -55,10 +55,15 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="2">
-				<div class="input-group">
+			<td >
+				<div class="input-group" style="width:300px;">
 					<span class="input-group-addon">图片水印</span>
-					<input id="sign" type="text" class="form-control" placeholder="图片水印" value=""></div>
+					<input id="sign" type="text" class="form-control" placeholder="图片水印" value="http://sin-imgs.qiniudn.com/demo.jpg"></div>
+			</td>
+			<td>
+				<div class="input-group" style="width:300px;">
+					<span class="input-group-addon">字体大小</span>
+					<input id="signsize" type="number" class="form-control" placeholder="字体大小"  value="20"></div>
 			</td>
 		</tr>
 		<tr>
@@ -109,6 +114,7 @@
 						"&width="+$("#imgw").val()+
 						"&height="+$("#imgh").val()+
 						"&sign="+$("#sign").val()+
+						"&signsize="+$("#signsize").val()+
 						"&filters="+fts;
 		$("#refurl").val(url);
 		// if($("#imgview").attr("src") != url)
@@ -123,6 +129,8 @@
 		$("#imgurl").keydown(keydown);
 		$("#imgw").keydown(keydown);
 		$("#imgh").keydown(keydown);
+		$("#sign").keydown(keydown);
+		$("#signsize").keydown(keydown);
 		update();
 
 
