@@ -5,15 +5,40 @@ Created on 2015年1月18日
 @author: RobinTang
 '''
 try:
-    import Image
+    import Image, ImageDraw, ImageFont, ImageFilter
 except:
     pass
 try:
-    from PIL import Image
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
 except:
     pass
 
 import StringIO
+
+filters = {
+    'blur':(ImageFilter.BLUR, '模糊滤镜'),
+    'contour':(ImageFilter.CONTOUR, '轮廓'),
+    'edge_enhance':(ImageFilter.EDGE_ENHANCE, '边界加强'),
+    'edge_enhance_more':(ImageFilter.EDGE_ENHANCE_MORE, '边界加强(阀值更大)'),
+    'emboss':(ImageFilter.EMBOSS, '浮雕滤镜'),
+    'find_edges':(ImageFilter.FIND_EDGES, '边界滤镜'),
+    'smooth':(ImageFilter.SMOOTH, '平滑滤镜'),
+    'smooth_more':(ImageFilter.SMOOTH_MORE, '平滑滤镜(阀值更大)'),
+    'sharpen':(ImageFilter.SHARPEN, '锐化滤镜'),
+}
+
+font = None
+def getfont():
+    global font
+    if not font:
+        import os, sys
+        try:
+            file_name = os.path.dirname(sys.modules['img'].__file__)
+            path = os.path.abspath(file_name)
+        except:
+            path = ''
+            font = ImageFont.truetype(os.path.join(path, "font.ttf"), 20)
+    return font
 
 def fitto(src, dw=360, dh=200):
     dst = Image.new("RGBA", (dw, dh), (255, 255, 255, 0))
@@ -31,6 +56,12 @@ def fitto(src, dw=360, dh=200):
     y = (dh - h) / 2
     dst.paste(nsrc, (x, y, x + w, y + h))
     return dst
+
+def watermark(m, s, color=(0,0,0,255)):
+    draw = ImageDraw.Draw(m)
+    fsize = draw.textsize(s, font=getfont())
+    draw.text((m.size[0]-fsize[0]-5, m.size[1]-fsize[1]), s, font=getfont(), fill=color)
+    return m
 
 def getimg(path):
     if path.startswith("http://") or path.startswith("https://"):
@@ -56,7 +87,10 @@ def getimgbytes(m, fmt="png"):
     return dats
 
 if __name__ == "__main__":
-#     img = fitto(getimg("./imgs/s6037735.jpg"), 200, 200).show()
-    Image.new("RGBA", (100, 100), (255, 255, 255)).show()
+    m = getimg("http://img0.bdstatic.com/img/image/shouye/xinshouye/meishi116.jpg")
+    # watermark(m, "Powered by Sin")
+    for v in filters.values():
+        m = m.filter(v[0])
+    m.show()
     
     
