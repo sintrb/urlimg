@@ -60,22 +60,46 @@ class StcHandler(SAERequestHandler):
         import json
         self.write(json.dumps(self.kv.get_info()))
 
+class FiltersHandler(SAERequestHandler):
+    def get(self):
+        import img, json
+        fts = dict([(k, v[1])  for k,v in img.filters.items()])
+        self.set_header("Content-Type", "text/json")
+        self.write(json.dumps(fts))
+        
+
 class SwitchImg(SAERequestHandler):
     def get(self):
-        import img
-        w = int(self.get_argument("width", 0))
-        h = int(self.get_argument("height", 0))
-        url = self.get_argument("url", None)
-        usecacache = not int(self.get_argument("nocache", 0))
+        import img, json
+        from urllib import unquote
+        argsmap = {
+            'width':(int, 0),
+            'height':(int, 0),
+            'url':(str, ''),
+            'sign':(str, ''),
+            'filters':(str,''),
+        }
+
+        args = dict([(k, argsmap[k][0](unquote(str(self.get_argument(k, argsmap[k][1]))))) for k in argsmap.keys()])
+        if args['width'] < 0:
+            args['width'] = 0
+        if args['height'] < 0:
+            args['height'] = 0
+
+        url = args['url']
+        usecache = not int(self.get_argument("nocache", 0))
         
         if url:
-            urlkey = 'u%s' % (md5(url))
-            key = '%s_w%s_h%s' % (urlkey, w, h)
-            res = usecacache and self.kv.get(key)
+            urlkey = md5(url)
+            s = '|'.join(['%s_%s'%(k,v) for (k,v) in args.items() if v])
+            # self.write(s)
+            # return
+            key = md5(s)
+            res = usecache and self.kv.get(key)
             if res:
                 self.set_header("Cached", "Image")
             else:
-                bts = usecacache and self.kv.get(urlkey)
+                bts = usecache and self.kv.get(urlkey)
                 if bts:
                     self.set_header("Cached", "Url")
                 else:
@@ -88,12 +112,21 @@ class SwitchImg(SAERequestHandler):
                 m = img.getimgwithdats(dats)
                 sw = m.size[0]
                 sh = m.size[1]
+                w = args['width']
+                h = args['height']
                 if w <= 0:
                     w = sw
                 if h <= 0:
                     h = sh
                 if w != sw or h != sh:
                     m = img.fitto(m, w, h)
+                if args['filters']:
+                    for fk in args['filters'].split(','):
+                        if fk.strip() in img.filters:
+                            m = m.filter(img.filters[fk.strip()][0])
+                if args['sign']:
+                    m = img.watermark(m, args['sign'])
+
                 res = img.getimgbytes(m, "png")
                 dats.close()
                 self.kv.set(key, res)
@@ -110,6 +143,7 @@ url = [
     (r"/", SwitchImg),
     (r"/hi", MainHandler),
     (r"/stc", StcHandler),
+    (r"/filters", FiltersHandler),
     (r"/demo", DemoHandler),
 ]
 
