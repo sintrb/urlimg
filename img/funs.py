@@ -16,16 +16,18 @@ except:
 import StringIO
 
 filters = {
-    'blur':(ImageFilter.BLUR, '模糊滤镜'),
-    'contour':(ImageFilter.CONTOUR, '轮廓'),
-    'edge_enhance':(ImageFilter.EDGE_ENHANCE, '边界加强'),
-    'edge_enhance_more':(ImageFilter.EDGE_ENHANCE_MORE, '边界加强(阀值更大)'),
-    'emboss':(ImageFilter.EMBOSS, '浮雕滤镜'),
-    'find_edges':(ImageFilter.FIND_EDGES, '边界滤镜'),
-    'smooth':(ImageFilter.SMOOTH, '平滑滤镜'),
-    'smooth_more':(ImageFilter.SMOOTH_MORE, '平滑滤镜(阀值更大)'),
-    'sharpen':(ImageFilter.SHARPEN, '锐化滤镜'),
+    ('blur', ImageFilter.BLUR, '模糊滤镜'),
+    ('contour', ImageFilter.CONTOUR, '轮廓'),
+    ('edge_enhance', ImageFilter.EDGE_ENHANCE, '边界加强'),
+    ('edge_enhance_more', ImageFilter.EDGE_ENHANCE_MORE, '边界加强(阀值更大)'),
+    ('emboss', ImageFilter.EMBOSS, '浮雕滤镜'),
+    ('find_edges', ImageFilter.FIND_EDGES, '边界滤镜'),
+    ('smooth', ImageFilter.SMOOTH, '平滑滤镜'),
+    ('smooth_more', ImageFilter.SMOOTH_MORE, '平滑滤镜(阀值更大)'),
+    ('sharpen', ImageFilter.SHARPEN, '锐化滤镜'),
 }
+
+filtersmap = dict([(v[0], (v[1], v[2])) for v in filters])
 
 font = None
 def getfont():
@@ -37,7 +39,7 @@ def getfont():
             path = os.path.abspath(file_name)
         except:
             path = ''
-            font = ImageFont.truetype(os.path.join(path, "font.ttf"), 20)
+        font = ImageFont.truetype(os.path.join(path, "font.ttf"), 20)
     return font
 
 def fitto(src, dw=360, dh=200):
@@ -57,10 +59,11 @@ def fitto(src, dw=360, dh=200):
     dst.paste(nsrc, (x, y, x + w, y + h))
     return dst
 
-def watermark(m, s, color=(0,0,0,255)):
+def watermark(m, s, color=(0, 0, 0, 255)):
     draw = ImageDraw.Draw(m)
-    fsize = draw.textsize(s, font=getfont())
-    draw.text((m.size[0]-fsize[0]-5, m.size[1]-fsize[1]), s, font=getfont(), fill=color)
+    font = getfont()
+    fsize = font.getsize(s)
+    draw.text((m.size[0] - fsize[0] - 5, m.size[1] - 20 - 5), s, font=font, fill=color)
     return m
 
 def getimg(path):
@@ -88,9 +91,8 @@ def getimgbytes(m, fmt="png"):
 
 if __name__ == "__main__":
     m = getimg("http://img0.bdstatic.com/img/image/shouye/xinshouye/meishi116.jpg")
-    # watermark(m, "Powered by Sin")
-    for v in filters.values():
-        m = m.filter(v[0])
+    m = fitto(m, 300, 300)
+    m = watermark(m, "Powered by Sin")
     m.show()
     
     

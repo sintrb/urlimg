@@ -3,9 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>Url Image</title>
+	<title>UrlImg</title>
 	<meta name="description" content="">
-	<meta name="keywords" content="Url Image">
+	<meta name="keywords" content="UrlImg">
 
 	<!-- 新 Bootstrap 核心 CSS 文件 -->
 	<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
@@ -39,7 +39,7 @@
 			<td colspan="2">
 				<div class="input-group">
 					<span class="input-group-addon">图片地址</span>
-					<input id="imgurl" type="text" class="form-control" placeholder="图片地址" value="http://sae.sina.com.cn/static/image/home/logo.png"></div>
+					<input id="imgurl" type="text" class="form-control" placeholder="图片地址" value="http://sin-imgs.qiniudn.com/demo.jpg"></div>
 			</td>
 		</tr>
 		<tr>
@@ -79,7 +79,7 @@
 			<td colspan="2">
 				<div class="input-group">
 					<span class="input-group-addon">引用地址</span>
-					<input id="refurl" type="text" class="form-control" value="" readonly="true"></div>
+					<input id="refurl" type="text" class="form-control" value="" readonly="readonly" style="cursor: text;"></div>
 			</td>
 		</tr>
 	</table>
@@ -111,7 +111,8 @@
 						"&sign="+$("#sign").val()+
 						"&filters="+fts;
 		$("#refurl").val(url);
-		$("#imgview").attr("src", url);
+		// if($("#imgview").attr("src") != url)
+			$("#imgview").attr("src", url);
 	}
 	function keydown(e) {
 		if(e.keyCode == 13){
@@ -126,12 +127,18 @@
 
 
 		$("#btn_addfilter").click(function(event) {
-			var s = '<option value="">不使用</option>';
-			for(k in filters){
-				var l = '<option value="_value">_text</option>'.replace('_value', k).replace('_text', filters[k]);
+			var s = '<option value="">--不使用---</option>';
+			$.each(filters, function(index, val) {
+				var l = '<option value="_value">_text</option>'.replace('_value', val[0]).replace('_text', val[1]);
 				s = s + l;
-			}
+			});
+			s = s + '<option value="-del-">--删除--</option>';
 			var h = '<select class="sel-filter">_options</select>'.replace('_options', s);
+			h = $(h);
+			h.change(function(event) {
+				if($(this).val()=='-del-')
+					$(this).remove();
+			});
 			$("#filters").append(h);
 		});
 
@@ -141,7 +148,7 @@
 			dataType: 'JSON',
 		})
 		.done(function(r) {
-			filters = r;
+			filters = r.items;
 		})
 		.fail(function() {
 			alert("加载滤镜选项失败");

@@ -63,7 +63,9 @@ class StcHandler(SAERequestHandler):
 class FiltersHandler(SAERequestHandler):
     def get(self):
         import img, json
-        fts = dict([(k, v[1])  for k,v in img.filters.items()])
+        fts = {
+            'items': [(v[0], v[2]) for v in img.filters]
+        }
         self.set_header("Content-Type", "text/json")
         self.write(json.dumps(fts))
         
@@ -77,10 +79,18 @@ class SwitchImg(SAERequestHandler):
             'height':(int, 0),
             'url':(str, ''),
             'sign':(str, ''),
-            'filters':(str,''),
+            'filters':(str, ''),
         }
 
-        args = dict([(k, argsmap[k][0](unquote(str(self.get_argument(k, argsmap[k][1]))))) for k in argsmap.keys()])
+        args = {}
+        for k, v in argsmap.items():
+            av = unquote(str(self.get_argument(k, '')))
+            try:
+                av = v[0](av)
+            except Exception, e:
+                av = v[1]
+            args[k] = av
+
         if args['width'] < 0:
             args['width'] = 0
         if args['height'] < 0:
@@ -88,10 +98,10 @@ class SwitchImg(SAERequestHandler):
 
         url = args['url']
         usecache = not int(self.get_argument("nocache", 0))
-        
+        print 'url: ', url
         if url:
             urlkey = md5(url)
-            s = '|'.join(['%s_%s'%(k,v) for (k,v) in args.items() if v])
+            s = '|'.join(['%s_%s' % (k, v) for (k, v) in args.items() if v])
             # self.write(s)
             # return
             key = md5(s)
@@ -118,12 +128,12 @@ class SwitchImg(SAERequestHandler):
                     w = sw
                 if h <= 0:
                     h = sh
-                if w != sw or h != sh:
+                if w != sw or h != sh or m.format == 'GIF':
                     m = img.fitto(m, w, h)
                 if args['filters']:
                     for fk in args['filters'].split(','):
-                        if fk.strip() in img.filters:
-                            m = m.filter(img.filters[fk.strip()][0])
+                        if fk.strip() and fk.strip() in img.filtersmap:
+                            m = m.filter(img.filtersmap[fk.strip()][0])
                 if args['sign']:
                     m = img.watermark(m, args['sign'])
 
@@ -133,9 +143,9 @@ class SwitchImg(SAERequestHandler):
             self.set_header("Content-Type", "image/png")
             self.write(res)
         else:
-            self.redirect("/demo")
+            self.redirect("/edit")
         
-class DemoHandler(tornado.web.RequestHandler):
+class EditHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("demo.html")
 
@@ -144,7 +154,7 @@ url = [
     (r"/hi", MainHandler),
     (r"/stc", StcHandler),
     (r"/filters", FiltersHandler),
-    (r"/demo", DemoHandler),
+    (r"/edit", EditHandler),
 ]
 
 import os
@@ -157,9 +167,12 @@ settings = {
 
 
 if __name__ == "__main__":
+    import sys
     import tornado.ioloop
+    port = int(sys.argv[1]) if len(sys.argv) >= 2 else 8888
     application = tornado.web.Application(url, **settings)
-    application.listen(8888)
+    print 'listen at :%d' % port
+    application.listen(port)
     tornado.ioloop.IOLoop.instance().start()
 
 
