@@ -28,6 +28,9 @@
 	#imgview{
 		margin: 0 auto;
 	}
+	.sel-filter{
+		/*display:block;*/
+	}
 </style>
 </head>
 <body>
@@ -54,6 +57,27 @@
 		<tr>
 			<td colspan="2">
 				<div class="input-group">
+					<span class="input-group-addon">图片水印</span>
+					<input id="sign" type="text" class="form-control" placeholder="图片水印" value=""></div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div class="input-group">
+					<span class="input-group-addon">滤镜效果</span>
+					<div class="form-control" style="height: inherit;">
+						<div id="filters" style="display: block;"></div>
+						<button id="btn_addfilter" type="button" class="btn btn-default btn-sm" style="margin:4px 0;">
+							<span class="glyphicon glyphicon-plus-sign"></span>
+							添加滤镜
+						</button>
+					</div>
+					<!-- <input id="sign" type="text" class="form-control" placeholder="图片水印" value="TT">--></div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div class="input-group">
 					<span class="input-group-addon">引用地址</span>
 					<input id="refurl" type="text" class="form-control" value="" readonly="true"></div>
 			</td>
@@ -62,13 +86,30 @@
 	<center >
 		<img style="border: 1px solid; margin-top:5px;" src="" id="imgview">
 		<br />
-		<span>©2015 Sin, sintrb@gmail.com,  view on <a href="https://github.com/sintrb/urlimg">GitHub</a></span>
+		<span>
+			©2015 Sin, sintrb@gmail.com,  view on
+			<a href="https://github.com/sintrb/urlimg">GitHub</a>
+		</span>
 	</center>
 </body>
 	<script type="text/javascript">
+	var filters = null;
 	function update () {
 		var path = window.location.href.substr(0, window.location.href.indexOf("/", 10)+1);
-		var url = path + "?url="+$("#imgurl").val()+"&width="+$("#imgw").val()+"&height="+$("#imgh").val();
+		var fts ='';
+		$.each($(".sel-filter"), function(index, sel) {
+			if($(sel).val().length>0){
+				 if (fts!="")
+				 	fts = fts + ',';
+				 fts = fts + $(sel).val();
+			}
+		});
+
+		var url = path + "?url="+encodeURIComponent($("#imgurl").val())+
+						"&width="+$("#imgw").val()+
+						"&height="+$("#imgh").val()+
+						"&sign="+$("#sign").val()+
+						"&filters="+fts;
 		$("#refurl").val(url);
 		$("#imgview").attr("src", url);
 	}
@@ -83,6 +124,29 @@
 		$("#imgh").keydown(keydown);
 		update();
 
+
+		$("#btn_addfilter").click(function(event) {
+			var s = '<option value="">不使用</option>';
+			for(k in filters){
+				var l = '<option value="_value">_text</option>'.replace('_value', k).replace('_text', filters[k]);
+				s = s + l;
+			}
+			var h = '<select class="sel-filter">_options</select>'.replace('_options', s);
+			$("#filters").append(h);
+		});
+
+
+		$.ajax({
+			url: '/filters',
+			dataType: 'JSON',
+		})
+		.done(function(r) {
+			filters = r;
+		})
+		.fail(function() {
+			alert("加载滤镜选项失败");
+		});
+		
 		setInterval(update, 2000);
 	});
 </script>
