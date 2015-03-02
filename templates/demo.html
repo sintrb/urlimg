@@ -117,8 +117,8 @@
 						"&sign="+$("#sign").val()+
 						"&signsize="+$("#signsize").val()+
 						"&filters="+fts;
-		$("#refurl").val(url);
 		if($("#imgview").attr("src") != url){
+			$("#refurl").val(url);
 			$("#imgview").attr("src", url);
 			$("#infotips").html("正在加载图片...");
 		}
@@ -172,7 +172,7 @@
 			console.log('onerror');
 			$("#infotips").html("加载图片失败!!!");
 		};
-		setInterval(update, 2000);
+		setInterval(update, 1000);
 	});
 </script>
 </html>
