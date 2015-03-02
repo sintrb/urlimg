@@ -89,7 +89,8 @@
 		</tr>
 	</table>
 	<center >
-		<img style="border: 1px solid; margin-top:5px;" src="" id="imgview">
+		<span id="infotips"></span><br/>
+		<img style="border: 1px solid; margin-top:5px;" src="" id="imgview" onload="imgload" onerror="imgerror">
 		<br />
 		<span>
 			©2015 Sin, sintrb@gmail.com,  view on
@@ -117,8 +118,10 @@
 						"&signsize="+$("#signsize").val()+
 						"&filters="+fts;
 		$("#refurl").val(url);
-		// if($("#imgview").attr("src") != url)
+		if($("#imgview").attr("src") != url){
 			$("#imgview").attr("src", url);
+			$("#infotips").html("正在加载图片...");
+		}
 	}
 	function keydown(e) {
 		if(e.keyCode == 13){
@@ -161,7 +164,14 @@
 		.fail(function() {
 			alert("加载滤镜选项失败");
 		});
-		
+		document.getElementById('imgview').onload  = function (){
+			console.log('onload');	
+			$("#infotips").html("");
+		};
+		document.getElementById('imgview').onerror  = function (){
+			console.log('onerror');
+			$("#infotips").html("加载图片失败!!!");
+		};
 		setInterval(update, 2000);
 	});
 </script>
