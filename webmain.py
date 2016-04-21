@@ -7,6 +7,7 @@ Created on 2015年1月18日
 import tornado.web
 
 class KVClient:
+    MAX = 200
     def __init__(self):
         self.cache = {}
     def get(self, key):
@@ -16,6 +17,9 @@ class KVClient:
             return None
     def set(self, key, val, min_compress_len=0):
         self.cache[key] = val
+        if len(self.cache)>self.MAX:
+            # reset 
+            self.cache = {}
     def add(self, key, val, min_compress_len=0):
         if key not in self.cache:
             self.set(key, val, min_compress_len)
@@ -176,10 +180,11 @@ settings = {
 if __name__ == "__main__":
     import sys
     import tornado.ioloop
-    port = int(sys.argv[1]) if len(sys.argv) >= 2 else 9999
+    port = int(sys.argv[1]) if len(sys.argv) == 2 else int(sys.argv[2]) if len(sys.argv) == 3 else 9999
+    addr = sys.argv[1] if len(sys.argv) == 3 else '127.0.0.1'
     application = tornado.web.Application(url, **settings)
-    print 'listen at :%d' % port
-    application.listen(port)
+    print 'listen at %s:%d' % (addr,port)
+    application.listen(port,addr)
     tornado.ioloop.IOLoop.instance().start()
 
 
